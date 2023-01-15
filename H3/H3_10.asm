@@ -11,48 +11,50 @@ import exit msvcrt.dll    ; exit is a function that ends the calling process. It
 ; our data is declared here (the variables needed by our program)
 segment data use32 class=data
     ; ...
-    A db 2,1,3,3,4,2,6
-    l_a EQU $ - A
-    B db 4,5,7
-    l_b EQU $ - B
-    laste_b EQU B + l_b - 1
-    R RESB l_a + l_b
     
+    S1 DB 1,2,3,4
+    l_s1 EQU $ - S1
+    lastpos_s1 EQU $-1
+    
+    S2 DB 1,2,3,4
+    l_s2 EQU $ - S2
+    E:
+    ;Ergebnis soll sein 4,3,2,1,2,4
 ; our code starts here
 segment code use32 class=code
     start:
-        ; ...
-        ;TEIL 1: wir fügen B umgekehrt in R ein
-        mov esi, laste_b ;die Adresse des letzten elementes -> esi
-        mov edi, R
-        mov ecx, l_b
-        JECXZ teil1ende
-        anfang:
+        ; ...Teil1: S1 umgekehrt in E
+        mov esi, lastpos_s1
+        mov edi, E
+        mov ecx, l_s1
+        JECXZ endet1
+        anfangt1:
         STD
         LODSB
         CLD
         STOSB
-        Loop anfang
-        teil1ende:
+        Loop anfangt1
+        endet1:
         
-        ;Teil 2: wir fügen bei A nur die geraden Elemente in R ein
-        mov esi, A
-        mov ecx, l_a
-        mov bl, 2
+        ;Teil2
+        mov esi, S2
+        mov ecx, l_s2
+        JECXZ endet2
         CLD
-        JECXZ teil2ende
-        anfang2:
+        anfangt2:
+        mov eax, ecx
+        clc
+        shr eax, 1
+        JC ungerade
         LODSB
-        mov EDX, ESI
-        mov ah, 0
-        div bl
-        CMP ah, 1
-        JE nichtgerade
-        Mul bl
         STOSB
-        nichtgerade:
-        Loop anfang2
-        teil2ende:
+        JMP then
+        ungerade:
+        inc esi
+        then:
+        LOOP anfangt2
+        endet2:
+        ;Teil2:
         ; exit(0)
         push    dword 0      ; push the parameter for exit onto the stack
         call    [exit]       ; call exit to terminate the program
